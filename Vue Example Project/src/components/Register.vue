@@ -1,3 +1,70 @@
+<script setup>
+import { ref } from 'vue';
+import PocketBase from 'pocketbase';
+import { useAuthStore } from '../stores/authStore';
+import { useRouter } from 'vue-router';
+const email = ref('');
+const name = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const error = ref(false);
+const alertText = ref('');
+const pb = new PocketBase(import.meta.env.VITE_PB_URL);
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+async function register() {
+  if (!email.value || !name.value || !password.value || !confirmPassword.value) {
+    error.value = true;
+    alertText.value = 'Please fill out all fields';
+    return;
+  }
+  const emailRegex = /.+@.+\..+/;
+  if (!emailRegex.test(email.value)) {
+    alertText.value = 'Please enter a valid email';
+    error.value = true;
+    return;
+  }
+  if (name.value.length < 3) {
+    error.value = true;
+    alertText.value = 'Name must be at least 3 characters';
+    return;
+  }
+  if (password.value !== confirmPassword.value) {
+    error.value = true;
+    alertText.value = 'Passwords do not match';
+    return;
+  }
+  if (password.value.length < 6) {
+    error.value = true;
+    alertText.value = 'Password must be at least 6 characters';
+    return;
+  }
+  
+
+  try {
+    const record = await pb.collection('users').create({
+    email: email.value,
+    name: name.value,
+    password: password.value,
+    passwordConfirm: confirmPassword.value,
+    });
+    const {token, record: {id}} = await pb.collection('users').authWithPassword(
+      email.value,
+      password.value,
+    );
+    authStore.login(token);
+    router.push('/');
+  } catch (e) {
+    console.log(e);
+    error.value = true;
+    alertText.value = 'Failed to create user';
+    return;
+  }
+}
+</script>
+
 <template>
   <v-container>
     <v-card>
@@ -40,66 +107,3 @@
     </v-card>
   </v-container>
 </template>
-
-<script>
-export default {
-  data() {
-    return {
-      email: '',
-      name: '',
-      password: '',
-      confirmPassword: '',
-      error: false,
-      alertText: ''
-    };
-  },
-  methods: {
-    register() {
-      if (!this.email || !this.name || !this.password || !this.confirmPassword) {
-        this.error = true;
-        this.alertText = 'Please fill out all fields';
-        return;
-      }
-      const emailRegex = /.+@.+\..+/;
-      if (!emailRegex.test(this.email)) {
-        this.alertText = 'Please enter a valid email';
-        this.error = true;
-        return;
-      }
-      if (this.name.length < 3) {
-        this.error = true;
-        this.alertText = 'Name must be at least 3 characters';
-        return;
-      }
-      if (this.password !== this.confirmPassword) {
-        this.error = true;
-        this.alertText = 'Passwords do not match';
-        return;
-      }
-      if (this.password.length < 6) {
-        this.error = true;
-        this.alertText = 'Password must be at least 6 characters';
-        return;
-      }
-      
-      // Passwords match, continue with login logic
-      const userData = {
-        email: this.email,
-        name: this.name,
-        password: this.password
-      };
-      
-      // Example: log the user data to the console
-      console.log(userData);
-      
-      // Clear the form fields
-      this.email = '';
-      this.name = '';
-      this.password = '';
-      this.confirmPassword = '';
-      this.error = false;
-    }
-  }
-};
-</script>
-

@@ -13,8 +13,16 @@ const routes = [
   { path: '/users/:id', component: UserProfile },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
+const publicRoutes = ['/login', '/register'];
+const privateRoutes = ['/feed', '/users/:id'];
 
-export const router = createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+export {
+  router,
+  publicRoutes,
+  privateRoutes
+};

@@ -38,6 +38,7 @@ onMounted(async () => {
       </div>
   </v-container>
 </template>
+
 <style scoped>
 .container {
   padding: 0; /* Elimina el relleno (padding) del v-container */

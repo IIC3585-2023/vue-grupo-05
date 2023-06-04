@@ -1,3 +1,8 @@
+<script setup>
+import { ref } from 'vue';
+const dialog = ref(false);
+</script>
+
 <template>
   <div class="text-center">
     <v-dialog v-model="dialog" width="auto">
@@ -19,18 +24,10 @@
     </v-dialog>
   </div>
 </template>
+
 <style scoped>
   .text-center {
     top:0;
     left:0;
   }
 </style>
-<script>
-  export default {
-    data() {
-      return {
-        dialog: false,
-      }
-    },
-  }
-</script>

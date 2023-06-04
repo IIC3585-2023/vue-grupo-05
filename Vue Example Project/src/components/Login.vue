@@ -1,60 +1,50 @@
 <script setup>
-  import { ref } from 'vue';
-  import PocketBase from 'pocketbase';
-  const email = ref('');
-  const password = ref('');
-  const error = ref(false);
-  const alertText = ref('');
-  const pb = new PocketBase(import.meta.env.VITE_PB_URL);
+import { ref } from 'vue';
+import PocketBase from 'pocketbase';
+import { useAuthStore } from '../stores/authStore';
+import { useRouter } from 'vue-router';
 
-  async function login() {
-    if (!email.value || !password.value) {
-      error.value = true;
-      alertText.value = 'Please fill out all fields';
-      return;
-    }
-    const emailRegex = /.+@.+\..+/;
-    if (!emailRegex.test(email.value)) {
-      alertText.value = 'Please enter a valid email';
-      error.value = true;
-      return;
-    }
-    if (password.value.length < 8) {
-      error.value = true;
-      alertText.value = 'Password must be at least 8 characters';
-      return;
-    }
+const email = ref('');
+const password = ref('');
+const error = ref(false);
+const alertText = ref('');
+const pb = new PocketBase(import.meta.env.VITE_PB_URL);
 
-    // Passwords match, continue with login logic
-    const userData = {
-      email: email.value,
-      password: password.value
-    };
+const authStore = useAuthStore();
+const router = useRouter();
 
-    try {
-      const authData = await pb.collection('users').authWithPassword(
-        email.value,
-        password.value,
-    );
-    } catch (e) {
-      error.value = true;
-      alertText.value = 'Failed to authenticate user';
-      return;
-    }
-    console.log(authData)
-
-    // after the above you can also access the auth data from the authStore
-    console.log(pb.authStore.isValid);
-    console.log(pb.authStore.token);
-    console.log(pb.authStore.model.id);
-
-    // "logout" the last authenticated account
-    pb.authStore.clear();
-    // Clear the form fields
-    email.value = '';
-    password.value = '';
-    error.value = false;
+async function login() {
+  if (!email.value || !password.value) {
+    error.value = true;
+    alertText.value = 'Please fill out all fields';
+    return;
   }
+  const emailRegex = /.+@.+\..+/;
+  if (!emailRegex.test(email.value)) {
+    alertText.value = 'Please enter a valid email';
+    error.value = true;
+    return;
+  }
+  if (password.value.length < 8) {
+    error.value = true;
+    alertText.value = 'Password must be at least 8 characters';
+    return;
+  }
+
+  try {
+    const {token, record: {id}} = await pb.collection('users').authWithPassword(
+      email.value,
+      password.value,
+    );
+    authStore.login(token);
+    router.push('/');
+  } catch (e) {
+    console.log(e);
+    error.value = true;
+    alertText.value = 'Failed to authenticate user';
+    return;
+  }
+}
 </script>
 
 <template>
