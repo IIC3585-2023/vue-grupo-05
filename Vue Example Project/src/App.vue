@@ -1,10 +1,15 @@
 <script setup>
-import Card from './components/Card.vue'
+import Navbar from "./components/Navbar.vue";
 </script>
 
 <template>
   <!-- display according to the route -->
-  <router-view />
+  <v-app>
+    <Navbar />
+    <v-main class="content">
+      <router-view />
+    </v-main>
+  </v-app>
 </template>
 
 <style scoped>
@@ -14,10 +19,19 @@ import Card from './components/Card.vue'
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.vue:hover {
   filter: drop-shadow(0 0 2em #42b883aa);
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  opacity: 0.8;
 }
 </style>
