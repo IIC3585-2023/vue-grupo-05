@@ -25,6 +25,9 @@ const createBoard = async () => {
   };
   const record = await pb.collection("boards").create(data);
   boards.value = await authStore.loadBoards();
+  for (const board of boards.value) {
+    board.image = await getFirstImage(board.id);
+  }
 };
 
 const getFirstImage = async (boardId) => {
